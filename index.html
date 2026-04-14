@@ -8,42 +8,75 @@
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root { --accent: #00f2fe; --bg: #05070a; --surface: #12151c; --surface-light: #1e232d; --text-main: #e0e6ed; --text-dim: #94a3b8; --border: #2d3748; }
-        
         body { margin: 0; font-family: 'Inter', 'Hind Siliguri', sans-serif; background: var(--bg); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        
         header { background: rgba(18, 21, 28, 0.9); padding: 10px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); z-index: 100; }
         .logo { font-size: 1.3rem; font-weight: 700; background: linear-gradient(90deg, #00f2fe, #4facfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .user-name { font-size: 0.85rem; color: var(--accent); font-weight: 600; }
         .app-container { display: flex; flex: 1; overflow: hidden; }
-
         .sidebar { width: 40%; min-width: 450px; background: var(--surface); display: flex; flex-direction: column; border-right: 1px solid var(--border); }
-        
         .filter-panel { padding: 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; background: var(--surface); border-bottom: 1px solid var(--border); }
         .filter-panel select { background: #0f172a; color: white; border: 1px solid #334155; padding: 8px; border-radius: 6px; font-size: 0.75rem; outline: none; }
+        .table-container { flex: 1; overflow-y: auto; overflow-x: auto; padding: 5px; background: var(--surface); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; min-width: 800px; table-layout: fixed; }
+        th { background: #0f172a; color: var(--accent); padding: 12px 10px; position: sticky; top: 0; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        td { padding: 10px 10px; border-bottom: 1px solid #1e293b; color: var(--text-dim); cursor: pointer;  }
         
-        .table-container { flex: 1; overflow-y: auto; padding: 5px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; min-width: 550px; }
-        th { background: #0f172a; color: var(--accent); padding: 12px 8px; position: sticky; top: 0; text-align: left; border-bottom: 1px solid var(--border); }
-        td { padding: 10px 8px; border-bottom: 1px solid #1e293b; color: var(--text-dim); cursor: pointer; }
-        tr:hover td { background: #1e232d; color: white; }
+        /* কলাম অনুযায়ী সাইজ সেট করা (ইচ্ছামত কমাতে বা বাড়াতে পারেন) */
+th:nth-child(1), td:nth-child(1) { width: 60px; }  /* শ্রেণী */
+th:nth-child(2), td:nth-child(2) { width: 100px; } /* বিষয় */
+th:nth-child(3), td:nth-child(3) { width: 120px; } /* অধ্যায় */
+th:nth-child(4), td:nth-child(4) { width: 250px; } /* টপিক - এটি বড় রাখা ভালো */
+th:nth-child(5), td:nth-child(5) { width: 180px; } /* স্কুল */
+th:nth-child(6), td:nth-child(6) { width: 70px; }  /* বছর */
 
+/* স্ক্রলবারকে আরও সুন্দর করার জন্য (Chrome, Safari) */
+.table-container::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.table-container::-webkit-scrollbar-track {
+    background: var(--bg);
+}
+.table-container::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 10px;
+}
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+}
+        
+        /* tr.active-row td { background: #1e232d; color: white; border-left: 2px solid var(--accent); } */
+        /* সিলেক্টেড রো-এর পুরো ডিজাইন */
+tr.active-row td { 
+    background: rgba(0, 242, 254, 0.15) !important; /* হালকা অ্যাকসেন্ট ব্যাকগ্রাউন্ড */
+    color: var(--accent) !important; /* টেক্সট কালার নীলচে হবে */
+    border-top: 1px solid rgba(0, 242, 254, 0.3);
+    border-bottom: 1px solid rgba(0, 242, 254, 0.3);
+    font-weight: 600;
+}
+
+/* প্রথম কলামে একটি উজ্জ্বল বর্ডার মার্ক */
+tr.active-row td:first-child {
+    border-left: 4px solid var(--accent) !important;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+/* শেষ কলামে রেডিয়াস */
+tr.active-row td:last-child {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
         .player-section { flex: 1; background: #000; display: flex; flex-direction: column; padding: 20px; align-items: center; overflow-y: auto; }
         .video-wrapper { width: 100%; max-width: 900px; aspect-ratio: 16/9; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: #12151c; position: relative; }
         iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; }
-        
         .playing-info { max-width: 900px; margin-top: 20px; width: 100%; }
-        .playing-info h2 { font-size: 1.2rem; margin-bottom: 5px; color: var(--accent); }
-
         #loginOverlay { position: fixed; inset: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999; }
         .login-card { background: var(--surface); padding: 35px; border-radius: 15px; width: 300px; text-align: center; border: 1px solid var(--border); }
         .login-card input { width: 100%; padding: 12px; margin: 8px 0; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white; box-sizing: border-box; }
         .btn-login { width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 8px; font-weight: 700; cursor: pointer; color: #000; }
-
-        @media (max-width: 1024px) {
-            .app-container { flex-direction: column; overflow: auto; }
-            .sidebar { width: 100%; min-width: 100%; height: 400px; }
-            .player-section { height: auto; padding: 10px; }
-        }
+        @media (max-width: 1024px) { .app-container { flex-direction: column; overflow-y: auto; } .sidebar { width: 100%; min-width: 100%; height: 50vh; } .table-container { height: 100%; } }
     </style>
 </head>
 <body>
@@ -60,7 +93,8 @@
 
 <header>
     <div class="logo">Smart Class Pro</div>
-    <div id="userSection" style="display: none;">
+    <div id="userSection" class="user-info" style="display: none;">
+        <span class="user-name" id="displayUserName"></span>
         <button onclick="logout()" style="background:transparent; color:var(--text-dim); border:1px solid var(--border); padding:5px 12px; border-radius:15px; cursor:pointer; font-size: 0.8rem;">লগআউট</button>
     </div>
 </header>
@@ -77,14 +111,7 @@
         <div class="table-container">
             <table>
                 <thead>
-                    <tr>
-                        <th>শ্রেণী</th>
-                        <th>বিষয়</th>
-                        <th>অধ্যায়</th>
-                        <th>টপিক</th>
-                        <th>স্কুল</th>
-                        <th>বছর</th>
-                    </tr>
+                    <tr><th>শ্রেণী</th><th>বিষয়</th><th>অধ্যায়</th><th>টপিক</th><th>স্কুল</th><th>বছর</th></tr>
                 </thead>
                 <tbody id="videoTableBody"></tbody>
             </table>
@@ -96,40 +123,68 @@
             <div style="color:var(--text-dim); display:flex; justify-content:center; align-items:center; height:100%">ভিডিও সিলেক্ট করুন</div>
         </div>
         <div class="playing-info">
-            <h2 id="nowPlayingTitle">শিখন শুরু হোক...</h2>
+            <h2 id="nowPlayingTitle" style="color:var(--accent)">শিখন শুরু হোক...</h2>
             <p id="nowPlayingMeta" style="color:var(--text-dim)"></p>
         </div>
     </div>
 </div>
 
 <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwDLG8azvFSdrOs3H9NqCWkCQ983iK8n92P6Vp96oJspstWiTY6Z_qcGG7V9xJ9x2eyEg/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzq5UbQRVUA1xv9USzyPmooVRJjAPoIZTOsnuvvnIoYCcvPl17LWChsGZpugvhtMtAt-w/exec';
     let db = [];
 
-    window.onload = () => { if(localStorage.getItem('isLoggedIn') === 'true') initApp(); };
+    window.onload = () => { 
+        if(localStorage.getItem('isLoggedIn') === 'true') {
+            document.getElementById('displayUserName').innerText = "স্বাগতম, " + localStorage.getItem('user');
+            initApp();
+        } 
+    };
+
+    function getDeviceInfo() {
+        const ua = navigator.userAgent;
+        if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) return "Tablet";
+        if (/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) return "Mobile";
+        return "Desktop";
+    }
+
+    async function sendLog(type, detail) {
+        const user = localStorage.getItem('user');
+        const device = getDeviceInfo();
+        let ip = "Unknown";
+        try { const res = await fetch('https://api.ipify.org?format=json'); const data = await res.json(); ip = data.ip; } catch(e){}
+        fetch(`${SCRIPT_URL}?type=log&logType=${type}&user=${user}&device=${device}&ip=${ip}&detail=${encodeURIComponent(detail)}`, {mode: 'no-cors'});
+    }
 
     async function handleLogin() {
         const u = document.getElementById('username').value;
         const p = document.getElementById('password').value;
         if(!u || !p) return;
-        document.getElementById('loginMsg').innerText = "যাচাই করা হচ্ছে...";
+        document.getElementById('loginMsg').innerText = "যাচাই হচ্ছে...";
         try {
             const res = await fetch(`${SCRIPT_URL}?type=login&user=${encodeURIComponent(u)}&pass=${encodeURIComponent(p)}`);
             const data = await res.json();
             if(data.status === "success") {
                 localStorage.setItem('isLoggedIn', 'true');
                 localStorage.setItem('user', data.username);
+                sendLog("Login", "পদ্ধতিগত লগইন সফল");
                 initApp();
+                location.reload(); 
             } else { document.getElementById('loginMsg').innerText = "ভুল তথ্য!"; }
         } catch(e) { document.getElementById('loginMsg').innerText = "সার্ভার এরর!"; }
     }
 
-    function logout() { localStorage.clear(); location.reload(); }
+    function logout() { 
+        sendLog("Logout", "সিস্টেম থেকে প্রস্থান");
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('user');
+        // localStorage.clear(); 
+        location.reload(); 
+    }
 
     function initApp() {
         document.getElementById('loginOverlay').style.display = 'none';
         document.getElementById('appMain').style.display = 'flex';
-        document.getElementById('userSection').style.display = 'block';
+        document.getElementById('userSection').style.display = 'flex';
         loadData();
     }
 
@@ -137,50 +192,57 @@
         try {
             const res = await fetch(SCRIPT_URL);
             db = await res.json();
-            updateDropdowns(); 
+            
+            // Restore Filters
+            const saved = JSON.parse(localStorage.getItem('lastFilters') || '{}');
+            const selectors = ['classSel', 'subSel', 'lessonSel', 'schoolSel', 'yearSel'];
+            
+            // Sequential restoration to maintain dependencies
+            selectors.forEach(id => {
+                if(saved[id.replace('Sel','')]) {
+                    document.getElementById(id).value = saved[id.replace('Sel','')];
+                    updateDropdowns();
+                }
+            });
+
+            updateDropdowns();
             filterData();
-        } catch(e) { console.error("ডাটা লোড সমস্যা"); }
+
+            const lastVideo = JSON.parse(localStorage.getItem('lastVideo') || 'null');
+            if(lastVideo) playVideo(lastVideo, true);
+
+        } catch(e) { console.error("Data Load Error"); }
     }
 
-    // Dependent Filter Logic
     function updateDropdowns() {
-        const fClass = document.getElementById('classSel').value;
-        const fSub = document.getElementById('subSel').value;
-        const fLesson = document.getElementById('lessonSel').value;
-        const fSchool = document.getElementById('schoolSel').value;
+        const f = {
+            class: document.getElementById('classSel').value,
+            sub: document.getElementById('subSel').value,
+            lesson: document.getElementById('lessonSel').value,
+            school: document.getElementById('schoolSel').value
+        };
 
-        // শ্রেণী (সবসময় থাকবে)
         fillSelect('classSel', 'class', db);
-
-        // বিষয় (শ্রেণী অনুযায়ী)
-        const subData = fClass ? db.filter(i => i.class == fClass) : [];
-        fillSelect('subSel', 'sub', subData);
-
-        // অধ্যায় (বিষয় অনুযায়ী)
-        const lessonData = fSub ? subData.filter(i => i.sub == fSub) : [];
-        fillSelect('lessonSel', 'lesson', lessonData);
-
-        // স্কুল (অধ্যায় অনুযায়ী)
-        const schoolData = fLesson ? lessonData.filter(i => i.lesson == fLesson) : [];
-        fillSelect('schoolSel', 'school', schoolData);
-
-        // বছর (স্কুল অনুযায়ী)
-        const yearData = fSchool ? schoolData.filter(i => i.school == fSchool) : [];
-        fillSelect('yearSel', 'year', yearData);
+        const subD = f.class ? db.filter(i => i.class == f.class) : [];
+        fillSelect('subSel', 'sub', subD);
+        const lesD = f.sub ? subD.filter(i => i.sub == f.sub) : [];
+        fillSelect('lessonSel', 'lesson', lesD);
+        const schD = f.lesson ? lesD.filter(i => i.lesson == f.lesson) : [];
+        fillSelect('schoolSel', 'school', schD);
+        const yerD = f.school ? schD.filter(i => i.school == f.school) : [];
+        fillSelect('yearSel', 'year', yerD);
     }
 
-    function fillSelect(eleId, key, dataList) {
-        const select = document.getElementById(eleId);
-        const currentVal = select.value;
-        select.innerHTML = `<option value="">${select.options[0].text}</option>`;
-        
-        if (dataList.length > 0) {
-            const uniqueValues = [...new Set(dataList.map(item => item[key]))].sort();
-            uniqueValues.forEach(val => { 
-                if(val) {
-                    const opt = new Option(val, val);
-                    if(val == currentVal) opt.selected = true;
-                    select.add(opt);
+    function fillSelect(id, key, list) {
+        const sel = document.getElementById(id);
+        const val = sel.value;
+        sel.innerHTML = `<option value="">${sel.options[0].text}</option>`;
+        if(list.length > 0) {
+            [...new Set(list.map(i => i[key]))].sort().forEach(v => {
+                if(v) {
+                    const opt = new Option(v, v);
+                    if(v == val) opt.selected = true;
+                    sel.add(opt);
                 }
             });
         }
@@ -188,7 +250,6 @@
 
     function filterData() {
         updateDropdowns();
-
         const f = {
             class: document.getElementById('classSel').value,
             sub: document.getElementById('subSel').value,
@@ -196,65 +257,55 @@
             school: document.getElementById('schoolSel').value,
             year: document.getElementById('yearSel').value
         };
+        localStorage.setItem('lastFilters', JSON.stringify(f));
 
         const filtered = db.filter(i => 
-            (!f.class || i.class == f.class) && 
-            (!f.sub || i.sub == f.sub) &&
-            (!f.lesson || i.lesson == f.lesson) &&
-            (!f.school || i.school == f.school) &&
+            (!f.class || i.class == f.class) && (!f.sub || i.sub == f.sub) &&
+            (!f.lesson || i.lesson == f.lesson) && (!f.school || i.school == f.school) &&
             (!f.year || i.year == f.year)
         );
         
         const body = document.getElementById('videoTableBody');
         body.innerHTML = "";
+        const cur = JSON.parse(localStorage.getItem('lastVideo') || '{}');
+
         filtered.forEach(item => {
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${item.class || ''}</td>
-                <td>${item.sub || ''}</td>
-                <td>${item.lesson || ''}</td>
-                <td style="color:white; font-weight:600;">${item.topic || ''}</td>
-                <td>${item.school || ''}</td>
-                <td>${item.year || ''}</td>
-            `;
-            row.onclick = () => {
-                playVideo(item);
-                if(window.innerWidth < 1024) window.scrollTo({top: 0, behavior: 'smooth'});
-            };
+            if(cur.url === item.url) row.classList.add('active-row');
+            row.innerHTML = `<td>${item.class||''}</td><td>${item.sub||''}</td><td>${item.lesson||''}</td><td style="color:white; font-weight:600;">${item.topic||''}</td><td>${item.school||''}</td><td>${item.year||''}</td>`;
+            row.onclick = () => playVideo(item);
             body.appendChild(row);
         });
     }
 
-    function getYoutubeID(url) {
-        if(!url) return null;
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-        const match = url.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : null;
+    function playVideo(item, isRestore = false) {
+        const ytId = getYoutubeID(item.url);
+        if(!ytId) return;
+
+        localStorage.setItem('lastVideo', JSON.stringify(item));
+        
+        if(!isRestore) {
+            // বিস্তারিত ভিডিও লগ পাঠানো
+            const detail = `প্লে: [${item.class}] [${item.sub}] - ${item.topic} (স্কুল: ${item.school})`;
+            sendLog("Video Play", detail);
+        }
+
+        const origin = window.location.origin === "null" ? "*" : window.location.origin;
+        const embedUrl = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=${isRestore?0:1}&enablejsapi=1&origin=${encodeURIComponent(origin)}`;
+        
+        document.getElementById('playerWrapper').innerHTML = `<iframe src="${embedUrl}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+        document.getElementById('nowPlayingTitle').innerText = item.topic;
+        document.getElementById('nowPlayingMeta').innerText = `${item.school || ''} | ${item.class || ''} | ${item.sub || ''} | ${item.lesson || ''}`;
+
+        document.querySelectorAll('tr').forEach(r => r.classList.remove('active-row'));
+        filterData(); 
+        if(!isRestore && window.innerWidth < 1024) window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
-    function playVideo(item) {
-        const ytId = getYoutubeID(item.url);
-        if(ytId) {
-            let currentOrigin = window.location.origin;
-            if (currentOrigin === "null" || currentOrigin.startsWith("file://")) {
-                currentOrigin = "*"; 
-            }
-
-            const embedUrl = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0&enablejsapi=1&origin=${encodeURIComponent(currentOrigin)}`;
-            
-            document.getElementById('playerWrapper').innerHTML = `
-                <iframe 
-                    src="${embedUrl}" 
-                    allow="autoplay; encrypted-media; picture-in-picture" 
-                    allowfullscreen 
-                    referrerpolicy="strict-origin-when-cross-origin">
-                </iframe>`;
-            
-            document.getElementById('nowPlayingTitle').innerText = item.topic;
-            document.getElementById('nowPlayingMeta').innerText = `${item.school || ''} | ${item.class || ''} | ${item.sub || ''}`;
-        } else {
-            alert("সঠিক ভিডিও লিংক পাওয়া যায়নি!");
-        }
+    function getYoutubeID(url) {
+        const reg = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const m = url ? url.match(reg) : null;
+        return (m && m[2].length === 11) ? m[2] : null;
     }
 </script>
 </body>
