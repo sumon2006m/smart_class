@@ -266,7 +266,15 @@
 
     <div class="player-section" id="mainPlayer">        
         <div class="video-wrapper" id="playerWrapper">
-            <div style="color:#444; height:100%; display:flex; align-items:center; justify-content:center; font-size: 0.8rem;">ভিডিও নির্বাচন করুন</div>
+            <!-- <div style="color:#444; height:100%; display:flex; align-items:center; justify-content:center; font-size: 0.8rem;">ভিডিও নির্বাচন করুন</div> -->
+             <div style="color:#555; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polygon points="10 8 16 12 10 16 10 8"/>
+                </svg>
+                <span id="playerWelcomeName" style="color:var(--accent); font-size:0.75rem;">স্বাগতম!</span>
+                <p style="margin-top:10px;">শিখতে শুরু করতে একটি ভিডিও নির্বাচন করুন</p>
+            </div>
         </div>
         <div class="playing-info">
             <h2 id="nowPlayingTitle">শিখন শুরু হোক...</h2> 
@@ -338,6 +346,13 @@
         document.getElementById('loginOverlay').style.display = 'none';
         document.getElementById('appMain').style.display = 'flex';
         document.getElementById('userSection').style.display = 'flex';
+
+        // প্লেয়ারের ভেতরে ব্যবহারকারীর নাম সেট করা
+        const userName = localStorage.getItem('user') || 'User';
+            if(document.getElementById('playerWelcomeName')) {
+            document.getElementById('playerWelcomeName').innerText = "স্বাগতম, " + userName + "!";
+        }
+
         loadData();
     }
 
@@ -400,77 +415,89 @@
         if(f.year) document.getElementById('yearSel').value = f.year;
     }
 
+    
+
+
     function filterData(shouldLog = true) {
-        const f = {
-            class: document.getElementById('classSel').value,
-            sub: document.getElementById('subSel').value,
-            lesson: document.getElementById('lessonSel').value,
-            school: document.getElementById('schoolSel').value,
-            year: document.getElementById('yearSel').value
-        };
-        localStorage.setItem('lastFilters', JSON.stringify(f));
+    const f = {
+        class: document.getElementById('classSel').value,
+        sub: document.getElementById('subSel').value,
+        lesson: document.getElementById('lessonSel').value,
+        school: document.getElementById('schoolSel').value,
+        year: document.getElementById('yearSel').value
+    };
+    
+    localStorage.setItem('lastFilters', JSON.stringify(f));
 
-        const filtered = db.filter(i => 
-            (!f.class || i.class == f.class) && (!f.sub || i.sub == f.sub) &&
-            (!f.lesson || i.lesson == f.lesson) && (!f.school || i.school == f.school) &&
-            (!f.year || i.year == f.year)
-        );
+    const filtered = db.filter(i => 
+        (!f.class || i.class == f.class) && (!f.sub || i.sub == f.sub) &&
+        (!f.lesson || i.lesson == f.lesson) && (!f.school || i.school == f.school) &&
+        (!f.year || i.year == f.year)
+    );
+    
+    const body = document.getElementById('videoTableBody');
+    const sidebar = document.querySelector('.sidebar'); 
+    const loadingBar = document.getElementById('loadingBar');
+    const lastVid = JSON.parse(localStorage.getItem('lastVideo') || '{}');
+    
+    body.innerHTML = ""; // আগের ডাটা ক্লিয়ার
+    let currentIndex = 0;
+    const initialChunk = 20; // শুরুতে ২০০টি
+    const scrollChunk = 20;   // স্ক্রল করলে ২০টি করে
+
+    // রো তৈরির কমন ফাংশন
+    function renderRows(count) {
+        const fragment = document.createDocumentFragment();
+        const toBanglaNum = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
         
-        const body = document.getElementById('videoTableBody');
-        body.innerHTML = "";
-        const lastVid = JSON.parse(localStorage.getItem('lastVideo') || '{}');
-
-        const loadingBar = document.getElementById('loadingBar');
+        const limit = Math.min(currentIndex + count, filtered.length);
         
-        body.innerHTML = ""; // আগের ডাটা ক্লিয়ার
+        for (; currentIndex < limit; currentIndex++) {
+            const item = filtered[currentIndex];
+            const row = document.createElement('tr');
+            if(lastVid.url === item.url) row.classList.add('active-row');
+            
+            row.innerHTML = `
+                <td class="sl-col">${toBanglaNum(currentIndex + 1)}</td>
+                <td>${item.class||'-'}</td>
+                <td>${item.sub||'-'}</td>
+                <td>${item.lesson||'-'}</td>
+                <td class="topic-cell">${item.topic||'-'}</td>
+                <td>${item.school||'-'}</td>
+                <td>${item.year||'-'}</td>
+            `;
+            row.onclick = () => playVideo(item);
+            fragment.appendChild(row);
+        }
         
-        // Chunk Rendering: ডাটা অল্প অল্প করে রেন্ডার হবে যেন ব্রাউজার ফ্রিজ না হয়
-        let index = 0;
-        const chunkSize = 20; // একবারে ২০০টি রো তৈরি হবে
+        body.appendChild(fragment);
+        
+        // প্রগ্রেস বার আপডেট
+        const progress = (currentIndex / filtered.length) * 100;
+        loadingBar.style.width = progress + "%";
+        if(currentIndex >= filtered.length) {
+            setTimeout(() => loadingBar.style.width = "0%", 500);
+        }
+    }
 
+    // শুরুতে ২০০টি ডাটা রেন্ডার (requestAnimationFrame দিয়ে স্মুথ করা হয়েছে)
+    requestAnimationFrame(() => renderRows(initialChunk));
 
-        function renderChunk() {
-            const fragment = document.createDocumentFragment();
-            const end = Math.min(index + chunkSize, filtered.length);
-            
-            for (; index < end; index++) {
-                const item = filtered[index];
-                const row = document.createElement('tr');
-                const toBanglaNum = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
-                if(lastVid.url === item.url) row.classList.add('active-row');
-                
-                row.innerHTML = `
-                    <td class="sl-col">${toBanglaNum(index + 1)}</td>
-                    <td>${item.class||'-'}</td>
-                    <td>${item.sub||'-'}</td>
-                    <td>${item.lesson||'-'}</td>
-                    <td class="topic-cell">${item.topic||'-'}</td>
-                    <td>${item.school||'-'}</td>
-                    <td>${item.year||'-'}</td>
-                `;
-                row.onclick = () => playVideo(item);
-                fragment.appendChild(row);
-            }
-            
-            body.appendChild(fragment);
-            
-            // প্রগ্রেস বার আপডেট
-            const progress = (index / filtered.length) * 100;
-            loadingBar.style.width = progress + "%";
-
-            if (index < filtered.length) {
-                requestAnimationFrame(renderChunk); // পরবর্তী অংশ রেন্ডার করবে
-            } else {
-                setTimeout(() => loadingBar.style.width = "0%", 500);
+    // সাইডবার স্ক্রল করলে অটোমেটিক ২০টি করে ডাটা লোড হবে
+    sidebar.onscroll = () => {
+        // যদি ইউজার স্ক্রল করে একদম নিচে চলে আসে
+        if (sidebar.scrollTop + sidebar.clientHeight >= sidebar.scrollHeight - 20) {
+            if (currentIndex < filtered.length) {
+                renderRows(scrollChunk);
             }
         }
+    };
 
-        renderChunk();
+    if(shouldLog) {
+        sendLog("Filter Action", `ফলাফল: ${filtered.length}টি ভিডিও`);
+    }
+}
 
-        if(shouldLog) {
-            sendLog("Filter Action", `ফলাফল: ${filtered.length}টি ভিডিও`);
-        }
-    }      
 
     function playVideo(item, isRestore = false) {
         const reg = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
