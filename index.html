@@ -170,7 +170,7 @@
             .filter-panel { grid-template-columns: repeat(2, 1fr); }
             .player-section { 
                 position: fixed; 
-                bottom: -20px; 
+                bottom: -50px; 
                 width: 100%; 
                 height: calc(var(--player-height-mobile) + var(--safe-bottom)); 
                 z-index: 1000;
@@ -231,11 +231,16 @@
         </div>
     </div>
 
+    <div class="playing-info">
+        <h2 id="nowPlayingTitle">শিখন শুরু হোক...</h2> 
+        <div id="nowPlayingMeta" class="meta-line"></div>           
+    </div>
+
     <div class="player-section" id="mainPlayer">
-        <div class="playing-info">
+        <!-- <div class="playing-info">
             <h2 id="nowPlayingTitle">শিখন শুরু হোক...</h2> 
             <div id="nowPlayingMeta" class="meta-line"></div>           
-        </div>
+        </div> -->
         <div class="video-wrapper" id="playerWrapper">
             <div style="color:#444; height:100%; display:flex; align-items:center; justify-content:center; font-size: 0.8rem;">ভিডিও নির্বাচন করুন</div>
         </div>
